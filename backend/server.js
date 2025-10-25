@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
@@ -32,6 +33,17 @@ app.use('/api/retailers', retailerRoutes);
 // Welcome route
 app.get('/', (req, res) => {
   res.json({ message: '🛍️ Welcome to Jhakaas Bazaar API' });
+});
+
+// Health endpoint — useful to check DB connection state in production
+// mongoose.connection.readyState: 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+app.get('/health', (req, res) => {
+  try {
+    const state = mongoose.connection && mongoose.connection.readyState;
+    res.json({ status: state, env: process.env.NODE_ENV || 'unknown' });
+  } catch (err) {
+    res.status(500).json({ error: 'health check failed' });
+  }
 });
 
 // Error handling middleware
