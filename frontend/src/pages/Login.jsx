@@ -18,7 +18,14 @@ const Login = () => {
 
   useEffect(() => {
     if (userInfo) {
-      navigate(redirect);
+      // Redirect based on user role
+      if (userInfo.role === 'admin') {
+        navigate('/admin');
+      } else if (userInfo.role === 'retailer') {
+        navigate('/retailer/dashboard');
+      } else {
+        navigate(redirect);
+      }
     }
   }, [userInfo, navigate, redirect]);
 

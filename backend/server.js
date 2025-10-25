@@ -14,6 +14,9 @@ import retailerRoutes from './routes/retailerRoutes.js';
 // Load environment variables
 dotenv.config();
 
+// Connect to database
+connectDB();
+
 const app = express();
 
 // Middleware
@@ -33,30 +36,11 @@ app.get('/', (req, res) => {
   res.json({ message: '🛍️ Welcome to Jhakaas Bazaar API' });
 });
 
-// Health endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
 // Error handling middleware
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Start function ensures we connect to DB before accepting requests
-const start = async () => {
-  try {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error('Failed to start server:', err.message);
-    process.exit(1);
-  }
-};
-
-start();
-
-// Export for Vercel serverless
-export default app;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
