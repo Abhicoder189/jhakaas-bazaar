@@ -30,6 +30,28 @@ This document explains how to switch the app from a local MongoDB (Compass) to M
  - Vercel/Netlify (frontend)
    - For frontend build, add any public env vars if required (but keep sensitive keys only on server). Typically no DB vars are needed for frontend.
 
+If both projects are deployed to Vercel (frontend + backend)
+ - Get the backend URL from Vercel (it will look like `https://<your-backend-project>.vercel.app`).
+ - In your frontend project on Vercel go to Settings -> Environment Variables and add:
+   - Name: `VITE_API_BASE_URL`
+   - Value: `https://<your-backend-project>.vercel.app` (do NOT add a trailing `/api` — the frontend will append `/api`).
+   - Add the variable for the correct environment(s): Production (and Preview if you want preview deployments to call a staging backend).
+ - Redeploy the frontend (trigger a new deployment from Vercel or push a commit).
+ - The frontend uses `import.meta.env.VITE_API_BASE_URL` (see `frontend/src/api/axios.js`). Locally you can set this in your shell or a `.env` file for `vite` as:
+
+  VITE_API_BASE_URL=http://localhost:5000
+
+ - CORS: the backend currently uses `cors()` (allow all origins) so it should accept requests from the frontend. If you tighten CORS in production, add the frontend origin (e.g., `https://<your-frontend>.vercel.app`) to the allowed list.
+
+ - Example full API endpoint after integration: `https://<your-backend-project>.vercel.app/api/products`.
+
+Troubleshooting
+ - If you see network errors in browser devtools:
+   - Confirm `VITE_API_BASE_URL` is set in Vercel for the Production environment and that the frontend was redeployed after adding it.
+   - Check backend logs in Vercel to see incoming requests and any errors.
+   - Test the backend endpoint directly in the browser or curl to ensure it's reachable.
+
+
 4) Optional: Seed the database
  - The repo includes `backend/seeder.js`. To seed locally or on a staging server run:
 
