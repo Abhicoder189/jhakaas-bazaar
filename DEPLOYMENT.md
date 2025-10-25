@@ -1,55 +1,144 @@
-# Deployment guide — Frontend on Vercel/Netlify, Backend on Render/Heroku, MongoDB Atlas
+# Deployment Guide — Vercel (Frontend + Backend) with MongoDB Atlas
 
-This document explains how to switch the app from a local MongoDB (Compass) to MongoDB Atlas and deploy the frontend and backend to the chosen providers.
+This guide explains how to deploy Jhakaas Bazaar with both frontend and backend on Vercel, connected to MongoDB Atlas.
 
-1) Create a MongoDB Atlas cluster
- - Go to https://www.mongodb.com/cloud/atlas and sign in or create an account.
- - Create a free Shared Cluster (M0). Choose a cloud provider and region near your users.
- - In "Database Access" create a database user with a username and password you will use in the connection string.
- - In "Network Access" add your app host IP ranges. For cloud hosts (Heroku/Render) use 0.0.0.0/0 (allows connections from anywhere) or restrict as needed.
- - In the Clusters UI click "Connect" -> "Connect your application" and copy the connection string. It will look like:
-   `mongodb+srv://<username>:<password>@cluster0.abcd.mongodb.net/<dbname>?retryWrites=true&w=majority`
+## Prerequisites
+- MongoDB Atlas account with a cluster set up
+- Vercel account
+- GitHub repository with your code
 
-2) Configure backend to use Atlas
- - The backend reads `process.env.MONGODB_URI` (see `backend/config/db.js`).
- - Locally: update `backend/.env` (or create it) and set `MONGODB_URI` to the Atlas string (replace `<username>`, `<password>`, `<dbname>`). Example:
+## 1. Set Up MongoDB Atlas
+1. Go to https://cloud.mongodb.com and create a free M0 cluster
+2. Create a database user (Database Access) with username and password
+3. Add network access (Network Access) - use `0.0.0.0/0` for Vercel or restrict to specific IPs
+4. Get your connection string from "Connect" → "Connect your application":
+   ```
+   mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/<dbname>?retryWrites=true&w=majority
+   ```
+5. **Important**: If your password has special characters (`@`, `:`, `/`, `?`, `#`, `%`), URL-encode them
 
-  MONGODB_URI=mongodb+srv://jhakaasUser:SuperSecret123@cluster0.abcd.mongodb.net/jhakaasdb?retryWrites=true&w=majority
+## 2. Deploy Backend to Vercel
 
- - Production: set the environment variable in your host (Render/Heroku) — do NOT commit credentials to git.
+### Option A: Via Vercel Dashboard (Recommended for first deployment)
+1. Go to https://vercel.com/new
+2. Import your GitHub repository
+3. Configure project:
+   - **Framework Preset**: Other
+   - **Root Directory**: Leave as `.` (root)
+   - **Build Command**: Leave empty
+   - **Output Directory**: Leave empty
+4. Add Environment Variables:
+   - `MONGODB_URI`: Your Atlas connection string
+   - `JWT_SECRET`: A strong random string (generate with: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`)
+   - `NODE_ENV`: `production`
+   - `GEMINI_API_KEY`: (if using the chatbot feature)
+5. Click "Deploy"
 
-3) Set environment variables on hosting platforms
- - Heroku
-   - In the app dashboard -> Settings -> Reveal Config Vars, add `MONGODB_URI` and `JWT_SECRET` (and any other keys like `OPENAI_API_KEY`).
-   - Ensure your `Procfile` contains: `web: npm start` and `start` script in `backend/package.json` runs `node server.js` (already present).
+### Option B: Via Vercel CLI
+```powershell
+cd "c:\files\it workshop project\jhakaas-bazaar"
+npm install -g vercel
+vercel login
+vercel --prod
+```
 
- - Render
-   - For a Web Service, set Environment -> Environment Variables `MONGODB_URI`, `JWT_SECRET`.
-   - Render automatically installs dependencies and runs `npm start` by default for Node apps.
+During setup, add environment variables when prompted or set them via dashboard.
 
- - Vercel/Netlify (frontend)
-   - For frontend build, add any public env vars if required (but keep sensitive keys only on server). Typically no DB vars are needed for frontend.
+## 3. Deploy Frontend to Vercel
 
-If both projects are deployed to Vercel (frontend + backend)
- - Get the backend URL from Vercel (it will look like `https://<your-backend-project>.vercel.app`).
- - In your frontend project on Vercel go to Settings -> Environment Variables and add:
-   - Name: `VITE_API_BASE_URL`
-   - Value: `https://<your-backend-project>.vercel.app` (do NOT add a trailing `/api` — the frontend will append `/api`).
-   - Add the variable for the correct environment(s): Production (and Preview if you want preview deployments to call a staging backend).
- - Redeploy the frontend (trigger a new deployment from Vercel or push a commit).
- - The frontend uses `import.meta.env.VITE_API_BASE_URL` (see `frontend/src/api/axios.js`). Locally you can set this in your shell or a `.env` file for `vite` as:
+### Create a separate Vercel project for the frontend:
+1. Go to https://vercel.com/new (or use CLI)
+2. Import the same repository (Vercel allows multiple projects from one repo)
+3. Configure project:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build` (auto-detected)
+   - **Output Directory**: `dist` (auto-detected)
+4. Add Environment Variable:
+   - `VITE_API_BASE_URL`: Your backend Vercel URL (e.g., `https://jhakaas-backend.vercel.app`)
+   - **Do NOT include `/api` at the end** — the frontend code automatically appends it
+5. Click "Deploy"
 
-  VITE_API_BASE_URL=http://localhost:5000
+## 4. Verify Deployment
 
- - CORS: the backend currently uses `cors()` (allow all origins) so it should accept requests from the frontend. If you tighten CORS in production, add the frontend origin (e.g., `https://<your-frontend>.vercel.app`) to the allowed list.
+### Backend:
+- Visit `https://your-backend.vercel.app/` - should show: `{"message":"🛍️ Welcome to Jhakaas Bazaar API"}`
+- Visit `https://your-backend.vercel.app/api/health` - should show: `{"status":"ok","timestamp":"..."}`
+- Visit `https://your-backend.vercel.app/api/products` - should return product data
 
- - Example full API endpoint after integration: `https://<your-backend-project>.vercel.app/api/products`.
+### Frontend:
+- Visit your frontend URL
+- Check browser DevTools Network tab to confirm API calls go to your backend URL
+- Test login, product browsing, cart functionality
 
-Troubleshooting
- - If you see network errors in browser devtools:
-   - Confirm `VITE_API_BASE_URL` is set in Vercel for the Production environment and that the frontend was redeployed after adding it.
-   - Check backend logs in Vercel to see incoming requests and any errors.
-   - Test the backend endpoint directly in the browser or curl to ensure it's reachable.
+## 5. Seed the Database (One-Time Setup)
+
+Run the seeder locally to populate your Atlas database:
+
+```powershell
+cd backend
+# Create a temporary .env file with your Atlas connection string
+$env:MONGODB_URI="mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/jhakaasdb"
+node seeder.js
+```
+
+This creates:
+- Admin user: `admin@jhakaas.com` / `admin123`
+- Test user: `user@test.com` / `test123`
+- Retailer: `retailer@test.com` / `retailer123`
+- Sample products
+
+## 6. Local Development
+
+### Backend:
+```powershell
+cd backend
+# Make sure .env has MONGODB_URI pointing to Atlas
+npm install
+npm run dev
+```
+
+### Frontend:
+```powershell
+cd frontend
+# Create .env with VITE_API_BASE_URL=http://localhost:5000
+npm install
+npm run dev
+```
+
+## Troubleshooting
+
+### "Operation buffering timed out" error:
+- ✅ Verify `MONGODB_URI` is set correctly in Vercel (check for typos)
+- ✅ Check MongoDB Atlas Network Access allows `0.0.0.0/0`
+- ✅ Ensure password is URL-encoded if it contains special characters
+- ✅ Verify database user exists and has read/write permissions
+- ✅ Check Vercel deployment logs for connection errors
+
+### Frontend can't reach backend:
+- ✅ Verify `VITE_API_BASE_URL` is set in frontend Vercel project
+- ✅ Redeploy frontend after adding the env variable
+- ✅ Check browser Network tab - requests should go to your backend URL
+- ✅ Test backend endpoints directly (visit `/api/products` in browser)
+
+### CORS errors:
+- Backend uses `cors()` which allows all origins by default
+- If you need to restrict, update `backend/server.js` to whitelist your frontend domain
+
+## Environment Variables Summary
+
+### Backend Vercel Project:
+- `MONGODB_URI` (required)
+- `JWT_SECRET` (required)
+- `NODE_ENV=production` (recommended)
+- `GEMINI_API_KEY` (optional, for chatbot)
+
+### Frontend Vercel Project:
+- `VITE_API_BASE_URL` (required) - your backend URL without trailing `/api`
+
+## Updating Your App
+
+Push to GitHub `main` branch and Vercel will automatically redeploy both projects (if you enabled Git integration).
 
 
 4) Optional: Seed the database

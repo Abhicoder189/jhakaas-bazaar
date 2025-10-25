@@ -1,5 +1,4 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
@@ -15,7 +14,6 @@ import retailerRoutes from './routes/retailerRoutes.js';
 // Load environment variables
 dotenv.config();
 
-// Connect to database and start server only after successful DB connection
 const app = express();
 
 // Middleware
@@ -35,15 +33,9 @@ app.get('/', (req, res) => {
   res.json({ message: '🛍️ Welcome to Jhakaas Bazaar API' });
 });
 
-// Health endpoint — useful to check DB connection state in production
-// mongoose.connection.readyState: 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
-app.get('/health', (req, res) => {
-  try {
-    const state = mongoose.connection && mongoose.connection.readyState;
-    res.json({ status: state, env: process.env.NODE_ENV || 'unknown' });
-  } catch (err) {
-    res.status(500).json({ error: 'health check failed' });
-  }
+// Health endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Error handling middleware
@@ -51,7 +43,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Start function ensures we don't accept requests until DB is connected.
+// Start function ensures we connect to DB before accepting requests
 const start = async () => {
   try {
     await connectDB();
@@ -65,3 +57,6 @@ const start = async () => {
 };
 
 start();
+
+// Export for Vercel serverless
+export default app;
