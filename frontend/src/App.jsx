@@ -4,7 +4,6 @@ import store from './store/store';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Chatbot from './components/Chatbot';
-import ApiDebug from './components/ApiDebug';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import Cart from './pages/Cart';
@@ -41,7 +40,6 @@ function App() {
           </main>
           <Footer />
           <Chatbot />
-          <ApiDebug />
         </div>
       </Router>
     </Provider>
