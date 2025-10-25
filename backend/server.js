@@ -14,15 +14,15 @@ import retailerRoutes from './routes/retailerRoutes.js';
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Connect to database immediately for serverless
+connectDB().catch(err => console.error('DB connection failed:', err));
 
 // Routes
 app.use('/api/users', userRoutes);
@@ -34,6 +34,20 @@ app.use('/api/retailers', retailerRoutes);
 // Welcome route
 app.get('/', (req, res) => {
   res.json({ message: '🛍️ Welcome to Jhakaas Bazaar API' });
+});
+
+// Health check with DB status
+app.get('/api/health', async (req, res) => {
+  try {
+    const mongoose = (await import('mongoose')).default;
+    res.json({ 
+      status: 'ok', 
+      dbStatus: mongoose.connection.readyState,
+      timestamp: new Date().toISOString() 
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
 });
 
 // Error handling middleware
