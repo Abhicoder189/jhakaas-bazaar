@@ -26,7 +26,7 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://jhakaas-bazaar.vercel.app', // Add your frontend Vercel URL here
+      'https://jhakaas-bazaar-plh2.vercel.app/', // Add your frontend Vercel URL here
       /\.vercel\.app$/ // Allow all Vercel preview deployments
     ];
     
