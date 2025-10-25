@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
   res.json({ message: '🛍️ Welcome to Jhakaas Bazaar API' });
 });
 
-// Health endpoint
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -43,26 +43,25 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Start function ensures we connect to DB before accepting requests
-const start = async () => {
-  try {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error('Failed to start server:', err.message);
-    process.exit(1);
-  }
-};
-
-// Only start server if not in Vercel (Vercel uses serverless)
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-  start();
-} else {
-  // For Vercel, connect to DB immediately
+// For Vercel serverless
+if (process.env.VERCEL) {
+  // Connect to DB for serverless
   connectDB().catch(err => console.error('DB connection failed:', err));
+} else {
+  // For local dev, wait for DB then start server
+  const start = async () => {
+    try {
+      await connectDB();
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+      });
+    } catch (err) {
+      console.error('Failed to start server:', err.message);
+      process.exit(1);
+    }
+  };
+  start();
 }
 
-// Export for Vercel serverless
+// Export for Vercel
 export default app;
