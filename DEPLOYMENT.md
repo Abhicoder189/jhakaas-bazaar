@@ -71,14 +71,15 @@ During setup, add environment variables when prompted or set them via dashboard.
 - Check browser DevTools Network tab to confirm API calls go to your backend URL
 - Test login, product browsing, cart functionality
 
-## 5. Seed the Database (One-Time Setup)
+## 5. Seed the Database (One-Time Setup) ⚠️ REQUIRED
+
+**You MUST run the seeder before admin login will work!**
 
 Run the seeder locally to populate your Atlas database:
 
 ```powershell
 cd backend
-# Create a temporary .env file with your Atlas connection string
-$env:MONGODB_URI="mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/jhakaasdb"
+# Make sure MONGODB_URI in .env points to Atlas
 node seeder.js
 ```
 
@@ -87,6 +88,8 @@ This creates:
 - Test user: `user@test.com` / `test123`
 - Retailer: `retailer@test.com` / `retailer123`
 - Sample products
+
+**Without running the seeder, you cannot login as admin!**
 
 ## 6. Local Development
 
