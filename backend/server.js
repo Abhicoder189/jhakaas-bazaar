@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
@@ -36,18 +37,13 @@ app.get('/', (req, res) => {
   res.json({ message: '🛍️ Welcome to Jhakaas Bazaar API' });
 });
 
-// Health check with DB status
-app.get('/api/health', async (req, res) => {
-  try {
-    const mongoose = (await import('mongoose')).default;
-    res.json({ 
-      status: 'ok', 
-      dbStatus: mongoose.connection.readyState,
-      timestamp: new Date().toISOString() 
-    });
-  } catch (err) {
-    res.status(500).json({ status: 'error', message: err.message });
-  }
+// Simple health check
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok',
+    dbStatus: mongoose.connection.readyState,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Error handling middleware
