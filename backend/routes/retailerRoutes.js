@@ -257,6 +257,13 @@ router.put('/products/:id/approve', protect, admin, async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    // If rejected, delete the product
+    if (approved === false) {
+      await Product.findByIdAndDelete(req.params.id);
+      return res.json({ message: 'Product rejected and removed' });
+    }
+
+    // If approved, update the status
     product.approved = approved;
     const updatedProduct = await product.save();
 
