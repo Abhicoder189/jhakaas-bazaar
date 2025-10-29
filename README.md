@@ -23,298 +23,109 @@ A modern, full-stack eCommerce platform celebrating India's finest artisans and 
 - Full CRUD operations on products
 - Order management with status updates
 - User management
-- Protected admin routes
+````markdown
+# 🛍️ Jhakaas Bazaar — MERN eCommerce (updated)
 
-### 🤖 **AI-Powered Chatbot**
-- Product search and recommendations
-- FAQ responses (shipping, returns, etc.)
-- Integrated with OpenAI/Gemini API
-- Chat history stored in MongoDB
-- Beautiful floating chat widget
+A full-stack marketplace showcasing handcrafted Indian goods. This README is a concise, up-to-date guide for development and deployment (frontend and backend are deployed separately).
 
-### 🔐 **Security Features**
-- JWT-based authentication
-- Bcrypt password hashing
-- Protected routes (user & admin)
-- CORS enabled
+![Jhakaas Bazaar](https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800)
 
-## 🚀 Tech Stack
+## Quick summary
+- Stack: MongoDB (Atlas), Express, React (Vite), Node.js
+- Frontend: React + Vite, Tailwind CSS, Redux Toolkit
+- Backend: Express + Mongoose, JWT auth, serverless-friendly DB connection
+- Deployment: Frontend & Backend as separate Vercel projects; MongoDB Atlas for production
 
-### Frontend
-- **React 18** with Vite
-- **Tailwind CSS** for styling
-- **Redux Toolkit** for state management
-- **React Router v6** for routing
-- **Axios** for API calls
-- **React Icons** for icons
+## What changed (important)
+- Frontend and backend are deployed as separate Vercel projects.
+- Frontend uses an env var `VITE_API_BASE_URL` (no trailing slash) — the axios client appends `/api`.
+- Frontend includes `frontend/vercel.json` to rewrite all routes to `index.html` (fixes reload 404s for client-side routing).
+- Backend includes CORS configuration to allow Vercel preview and your frontend domain.
 
-### Backend
-- **Node.js** (v20+)
-- **Express.js** for REST API
-- **MongoDB** with Mongoose ODM
-- **JWT** for authentication
-- **Bcrypt** for password hashing
-- **Axios** for external API calls
+## Local setup (short)
 
-## 📁 Project Structure
+Prerequisites: Node.js (v16+ recommended), npm, MongoDB or MongoDB Atlas account
 
-```
-jhakaas-bazaar/
-├── backend/
-│   ├── config/
-│   │   └── db.js                 # MongoDB connection
-│   ├── models/
-│   │   ├── User.js               # User schema
-│   │   ├── Product.js            # Product schema
-│   │   ├── Order.js              # Order schema
-│   │   └── Chat.js               # Chat schema
-│   ├── routes/
-│   │   ├── userRoutes.js         # Auth routes
-│   │   ├── productRoutes.js      # Product CRUD
-│   │   ├── orderRoutes.js        # Order management
-│   │   └── chatRoutes.js         # AI chatbot
-│   ├── middleware/
-│   │   ├── authMiddleware.js     # JWT & admin middleware
-│   │   └── errorMiddleware.js    # Error handling
-│   ├── utils/
-│   │   └── generateToken.js      # JWT token generator
-│   ├── server.js                 # Express server
-│   ├── seeder.js                 # Database seeder
-│   └── package.json
-│
-└── frontend/
-    ├── src/
-    │   ├── api/                  # API service layer
-    │   ├── components/           # Reusable components
-    │   │   ├── Navbar.jsx
-    │   │   ├── Footer.jsx
-    │   │   ├── ProductCard.jsx
-    │   │   ├── Chatbot.jsx
-    │   │   ├── Loader.jsx
-    │   │   └── Message.jsx
-    │   ├── pages/                # Route pages
-    │   │   ├── Home.jsx
-    │   │   ├── Shop.jsx
-    │   │   ├── Cart.jsx
-    │   │   ├── Login.jsx
-    │   │   ├── Register.jsx
-    │   │   ├── Profile.jsx
-    │   │   ├── AdminDashboard.jsx
-    │   │   ├── About.jsx
-    │   │   └── Contact.jsx
-    │   ├── store/                # Redux store
-    │   │   ├── store.js
-    │   │   └── slices/
-    │   │       ├── authSlice.js
-    │   │       ├── productSlice.js
-    │   │       ├── cartSlice.js
-    │   │       └── chatSlice.js
-    │   ├── App.jsx               # Main app component
-    │   ├── main.jsx              # Entry point
-    │   └── index.css             # Global styles
-    ├── tailwind.config.js        # Tailwind configuration
-    ├── vite.config.js            # Vite configuration
-    └── package.json
-```
-
-## 🛠️ Installation & Setup
-
-### Prerequisites
-- Node.js (v20 or higher)
-- MongoDB (local or MongoDB Atlas)
-- npm or yarn
-
-### 1. Clone the Repository
+1) Clone
 ```bash
-git clone <repository-url>
+git clone <repo-url>
 cd jhakaas-bazaar
 ```
 
-### 2. Backend Setup
-
+2) Backend (run locally)
 ```bash
 cd backend
 npm install
-```
-
-Create a `.env` file in the backend directory:
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/jhakaas-bazaar
-JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
-NODE_ENV=development
-
-# Optional: Add your OpenAI API key for chatbot
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Or use Gemini API instead
-# GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-**Seed the Database** with sample products and users:
-```bash
-node seeder.js
-```
-
-**Start the Backend Server:**
-```bash
+cp .env.example .env   # edit values (or create .env)
+# required env vars: MONGODB_URI, JWT_SECRET, NODE_ENV
+node seeder.js         # optional: seed demo users & products
 npm run dev
 ```
 
-Backend will run on `http://localhost:5000`
-
-### 3. Frontend Setup
-
-Open a new terminal:
+3) Frontend (run locally)
 ```bash
 cd frontend
 npm install
-```
-
-**Start the Frontend Development Server:**
-```bash
 npm run dev
 ```
 
-Frontend will run on `http://localhost:3000`
+Note: Frontend dev server proxies `/api` to your backend in development (check `frontend/package.json` proxy or axios base). When running frontend locally, `VITE_API_BASE_URL` can be empty so axios uses `/api`.
 
-## 👤 Demo Credentials
+## Environment variables (essential)
 
-After seeding the database, you can use these credentials:
+Backend (`backend/.env` on Vercel or local):
+- MONGODB_URI — MongoDB connection string (use Atlas for production)
+- JWT_SECRET — secret for signing tokens
+- NODE_ENV — production/development
+- OPENAI_API_KEY or GEMINI_API_KEY — optional for chatbot
 
-### User Account
-- **Email:** user@test.com
-- **Password:** test123
+Frontend (Vercel project settings):
+- VITE_API_BASE_URL — e.g. `https://your-backend.vercel.app` (do NOT add a trailing slash or `/api`)
 
-### Admin Account
-- **Email:** admin@jhakaas.com
-- **Password:** admin123
+Common gotcha: if `VITE_API_BASE_URL` has a trailing slash you may see `//api` double-slash URLs. Remove trailing slash or update frontend axios to sanitize the URL.
 
-## 🎯 API Endpoints
+## Deployment (recommended)
 
-### Authentication
-- `POST /api/users/register` - Register new user
-- `POST /api/users/login` - Login user
-- `GET /api/users/profile` - Get user profile (Protected)
+Frontend (Vercel):
+- Connect the `frontend` folder as a separate Vercel project (or point to repo and set root to `frontend`).
+- Add the environment variable `VITE_API_BASE_URL` pointing to your backend Vercel URL (no trailing slash).
+- Ensure `frontend/vercel.json` exists (this repo includes it) to allow SPA routing.
 
-### Products
-- `GET /api/products` - Get all products (with filters)
-- `GET /api/products/:id` - Get single product
-- `POST /api/products` - Create product (Admin only)
-- `PUT /api/products/:id` - Update product (Admin only)
-- `DELETE /api/products/:id` - Delete product (Admin only)
+Backend (Vercel):
+- Deploy the `backend` folder as a separate Vercel project (or use your preferred host).
+- Set these environment variables in the backend project: `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV`, any API keys.
+- The backend exposes API routes under `/api/*` (e.g. `/api/products`, `/api/users/login`).
 
-### Orders
-- `POST /api/orders` - Create new order (Protected)
-- `GET /api/orders/myorders` - Get user orders (Protected)
-- `GET /api/orders/:id` - Get order by ID (Protected)
-- `GET /api/orders` - Get all orders (Admin only)
-- `PUT /api/orders/:id/status` - Update order status (Admin only)
+MongoDB Atlas:
+- Use an Atlas cluster connection string for production in `MONGODB_URI` (use a restricted DB user and environment secrets).
 
-### Chatbot
-- `POST /api/chat` - Send chat message
-- `GET /api/chat/:sessionId` - Get chat history
+## Quick demo credentials (seeded by `seeder.js`)
+- Admin: `admin@jhakaas.com` / `admin123`
+- User: `user@test.com` / `test123`
 
-## 🤖 Chatbot Configuration
+## API overview (most-used endpoints)
+- POST `/api/users/login` — login, returns JWT
+- POST `/api/users/register` — register
+- GET `/api/products` — list products (supports query filters)
+- GET `/api/products/:id` — product details
+- POST `/api/orders` — create order (authenticated)
 
-The chatbot has three modes:
+## Troubleshooting (quick)
+- Reload 404 on frontend routes: ensure `frontend/vercel.json` present and frontend project rewrites to `index.html`.
+- CORS errors: verify backend CORS allows your frontend origin; verify `VITE_API_BASE_URL` matches backend host.
+- Double-slash `//api` in URLs: remove trailing slash from `VITE_API_BASE_URL` or use the sanitized axios helper.
 
-### 1. **Mock Mode** (Default)
-Works out of the box with predefined responses for:
-- Product search
-- Recommendations
-- Shipping FAQs
-- Return policy
-- About the store
-
-### 2. **OpenAI Mode**
-Add your OpenAI API key to `.env`:
-```env
-OPENAI_API_KEY=sk-your-key-here
-```
-
-### 3. **Gemini Mode**
-Add your Gemini API key to `.env`:
-```env
-GEMINI_API_KEY=your-gemini-key-here
-```
-(Update `chatRoutes.js` to use Gemini instead of OpenAI)
-
-## 📦 Sample Products
-
-The seeder creates 12 sample products across 5 categories:
-- **Handicrafts** - Wooden sculptures, pottery, terracotta
-- **Apparel** - Silk sarees, block print kurtas
-- **Jewelry** - Kundan sets, silver anklets
-- **Home Décor** - Brass diyas, Madhubani paintings, cushion covers
-- **Accessories** - Pashmina shawls, Kolhapuri chappals
-
-## 🎨 Color Palette
-
-```css
-Saffron: #f97316
-Maroon: #800020
-Beige: #e6dcc1
-Gold: #f59e0b
-```
-
-## 🚢 Deployment
-
-### Frontend (Vercel)
-```bash
-cd frontend
-npm run build
-# Deploy the 'dist' folder to Vercel
-```
-
-### Backend (Render/Railway)
-1. Push your code to GitHub
-2. Connect to Render/Railway
-3. Add environment variables
-4. Deploy
-
-### MongoDB Atlas
-Use MongoDB Atlas for production database:
-```env
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/jhakaas-bazaar
-```
-
-## 🔧 Development
-
-### Run Backend in Dev Mode
-```bash
-cd backend
-npm run dev
-```
-
-### Run Frontend in Dev Mode
-```bash
-cd frontend
-npm run dev
-```
-
-### Build Frontend for Production
-```bash
-cd frontend
-npm run build
-```
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
-## 🙏 Acknowledgments
-
-- Product images from Unsplash
-- Icons from React Icons
-- Fonts from Google Fonts (Inter, Playfair Display)
-
-## 📧 Contact
-
-For questions or support:
-- Email: support@jhakaasbazaar.com
-- Website: [Jhakaas Bazaar](https://jhakaasbazaar.com)
+## Notes for maintainers
+- The backend implements serverless-friendly DB connection caching in `backend/config/db.js` to reduce cold-start overhead on Vercel.
+- When rejecting pending products from Admin, the API deletes them (see `backend/routes/retailerRoutes.js`).
 
 ---
 
-**Made with ❤️ to celebrate India's incredible artisans and craftspeople**
+If you'd like, I can also:
+- Add a short `README` section with screenshots (assets) and a `Try it` deployment checklist.
+- Update other docs (`DEPLOYMENT.md`) to match these instructions.
+
+**Made with ❤️ for artisans**
+
+````
+```
